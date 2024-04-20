@@ -1,5 +1,6 @@
 from datetime import timedelta
 import streamlit as st
+import altair as alt
 
 import requests
 import pandas as pd
@@ -145,7 +146,7 @@ def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
 
     df = pd.DataFrame(traininfo["TrainAnnouncement"])
 
-    df = df[['AdvertisedTimeAtLocation', 'TimeAtLocation', 'ActivityType']]
+    df = df[['AdvertisedTimeAtLocation', 'TimeAtLocation', 'ActivityType', 'LocationSignature', 'TrackAtLocation']]#, 'ToLocation', 'FromLocation']]
 
     df['AdvertisedTimeAtLocation'] = pd.to_datetime(df['AdvertisedTimeAtLocation'])
     df['TimeAtLocation'] = pd.to_datetime(df['TimeAtLocation'])
@@ -177,4 +178,12 @@ if locations is not []:
     df = df[df['ActivityType'].isin(activities)]
 
     # st.line_chart(df, x='AdvertisedTimeAtLocation', y='Delay', height=880)
-    st.scatter_chart(df, x='AdvertisedTimeAtLocation', y='Delay', height=660, color='ActivityType')
+    # st.scatter_chart(df, x='AdvertisedTimeAtLocation', y='Delay', height=660, color='ActivityType')
+    scale = alt.Scale(
+        range=["#1C0B19", "#698996", "#960200", "#9C89B8"],
+        domain=list(locations))
+    color = alt.Color("LocationSignature:N", scale=scale)
+
+    chart = alt.Chart(df).mark_point().encode(x='AdvertisedTimeAtLocation', y='Delay', color=color, tooltip=['AdvertisedTimeAtLocation', 'Delay', 'ActivityType', 'LocationSignature', 'TrackAtLocation']).interactive()
+
+    st.altair_chart(chart, use_container_width=True)
