@@ -73,7 +73,7 @@ def get_data(question: str) -> dict:
     return resp.json()['RESPONSE']['RESULT'][0]
 
 @st.cache_data
-def get_signature(location: str) -> pd.DataFrame:
+def get_signature(search_text: str = "") -> pd.DataFrame:
     """Get the signatures for a location."""
 
     question = create_question(
@@ -84,16 +84,19 @@ def get_signature(location: str) -> pd.DataFrame:
         schemaversion="1.5",
         limit=5000
     )
-    print (question)
 
     all_locations = get_data(
         question
     )
 
     df_locations = pd.DataFrame(all_locations['TrainStation'])
-    df_locations['AdvertisedLocationName'] = df_locations['AdvertisedLocationName'].str.lower()
 
-    return df_locations[df_locations['AdvertisedLocationName'].str.find(location) > -1]
+    if not search_text:
+        return df_locations
+
+    # df_locations['AdvertisedLocationName'] = df_locations['AdvertisedLocationName'].str.lower()
+
+    return df_locations[df_locations['AdvertisedLocationName'].str.find(search_text) > -1]
 
 @st.cache_data(ttl=timedelta(minutes=1))
 def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
@@ -151,18 +154,10 @@ def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
 
     return df
 
-station = st.text_input("Enter the name of the station").lower()
 
-locations = get_signature(station)
-if len(locations) == 0:
-    st.write("No station found")
-    st.stop()
-
-if len(locations) > 1:
-    location_names = st.multiselect("Select the station", locations['AdvertisedLocationName'])
-    locations = locations[locations['AdvertisedLocationName'].isin(location_names)]['LocationSignature'].values
-else:
-    locations = locations['LocationSignature'].values
+locations = get_signature()
+location_names = st.multiselect("Select the station", locations['AdvertisedLocationName'])
+locations = locations[locations['AdvertisedLocationName'].isin(location_names)]['LocationSignature'].values
 
 include_departures = st.checkbox("Departures", value=True)
 include_arrivals = st.checkbox("Arrivals", value=True)
