@@ -134,7 +134,7 @@ def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
         filters=filters,
         includes=[],
         schemaversion="1.9",
-        limit=1000
+        limit=100000
     )
 
     print(question)
@@ -182,8 +182,21 @@ if locations is not []:
     scale = alt.Scale(
         range=["#1C0B19", "#698996", "#960200", "#9C89B8"],
         domain=list(locations))
-    color = alt.Color("LocationSignature:N", scale=scale)
+    color = alt.Color("LocationSignature:N", scale=scale).legend(None)
 
     chart = alt.Chart(df).mark_point().encode(x='AdvertisedTimeAtLocation', y='Delay', color=color, tooltip=['AdvertisedTimeAtLocation', 'Delay', 'ActivityType', 'LocationSignature', 'TrackAtLocation']).interactive()
-
     st.altair_chart(chart, use_container_width=True)
+
+    chart_with_jitter = alt.Chart(df, height=600).mark_point().encode(
+        x='Delay:Q',
+        y='LocationSignature:N',
+        yOffset="jitter:Q",
+        color=color,
+        tooltip=['AdvertisedTimeAtLocation', 'Delay', 'ActivityType', 'LocationSignature', 'TrackAtLocation'],
+    ).transform_calculate(
+        jitter='sqrt(-2*log(random()))*cos(2*PI*random())'
+    ).interactive()
+
+    st.altair_chart(chart_with_jitter, use_container_width=True)
+
+    # st.write(df)
