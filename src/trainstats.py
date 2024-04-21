@@ -1,5 +1,6 @@
 from datetime import timedelta
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import altair as alt
 
 import requests
@@ -14,6 +15,8 @@ from xml.dom.minidom import Document, Element
 
 TRAFIKVERKET_API=os.getenv("TRAFIKVERKET_KEY")
 TRAFIKVERKET_URL="https://api.trafikinfo.trafikverket.se/v2/data.json"
+
+st_autorefresh(interval=1 * 60 * 1000)
 
 def create_question(object_type: str, filters: list, includes: list, namespace: str | None = None, schemaversion: str = "1,9", limit: int = 1000) -> str:
     """Create a question for the Trafikverket API."""
@@ -77,6 +80,8 @@ def get_data(question: str) -> dict:
 def get_signature(search_text: str = "") -> pd.DataFrame:
     """Get the signatures for a location."""
 
+    print("Getting signatures")
+
     question = create_question(
         object_type="TrainStation",
         filters=[],
@@ -102,6 +107,8 @@ def get_signature(search_text: str = "") -> pd.DataFrame:
 @st.cache_data(ttl=timedelta(minutes=1))
 def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
     """Get data for a specific station."""
+
+    print(f"Getting data for {locations}")
 
     filters = [
         {
@@ -137,7 +144,7 @@ def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
         limit=100000
     )
 
-    print(question)
+    # print(question)
 
     traininfo = get_data(question)
 
@@ -161,7 +168,7 @@ location_names = st.multiselect("Select the station", locations['AdvertisedLocat
 locations = locations[locations['AdvertisedLocationName'].isin(location_names)]['LocationSignature'].values
 
 include_departures = st.checkbox("Departures", value=True)
-include_arrivals = st.checkbox("Arrivals", value=True)
+include_arrivals = st.checkbox("Arrivals", value=False)
 activities = []
 if include_departures:
     activities.append("Avgang")
