@@ -157,7 +157,7 @@ def get_data_for_station(locations: list[str]) -> pd.DataFrame | None:
 
 
 locations = get_signature()
-location_names = st.multiselect("Select the station", locations['AdvertisedLocationName'])
+location_names = st.multiselect("Select the station", locations['AdvertisedLocationName'], default=["Stockholm C"])
 locations = locations[locations['AdvertisedLocationName'].isin(location_names)]['LocationSignature'].values
 
 include_departures = st.checkbox("Departures", value=True)
