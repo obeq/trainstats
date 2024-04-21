@@ -184,7 +184,7 @@ if locations is not []:
         domain=list(locations))
     color = alt.Color("LocationSignature:N", scale=scale).legend(None)
 
-    chart = alt.Chart(df).mark_point().encode(x='AdvertisedTimeAtLocation', y='Delay', color=color, tooltip=['AdvertisedTimeAtLocation', 'Delay', 'ActivityType', 'LocationSignature', 'TrackAtLocation']).interactive()
+    chart = alt.Chart(df).mark_line().encode(x='AdvertisedTimeAtLocation', y='Delay', color=color, tooltip=['AdvertisedTimeAtLocation', 'Delay', 'ActivityType', 'LocationSignature', 'TrackAtLocation']).interactive()
     st.altair_chart(chart, use_container_width=True)
 
     chart_with_jitter = alt.Chart(df, height=600).mark_point().encode(
