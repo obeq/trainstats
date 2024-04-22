@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import altair as alt
@@ -184,8 +184,20 @@ if locations is not []:
 
     df = df[df['ActivityType'].isin(activities)]
 
+    last_hour = df[df['AdvertisedTimeAtLocation'] > pd.to_datetime(datetime.now(UTC) - timedelta(hours=1))]
+    mean_delay_last_hour = last_hour.groupby('LocationSignature')['Delay'].mean()
+    mean_delay_total = df.groupby('LocationSignature')['Delay'].mean()
+
+    # st.write(f"Mean delay last hour")
+    # st.write(mean_delay_last_hour)
+    # st.write(f"Mean delay total")
+    # st.write(mean_delay_total)
+
     # st.line_chart(df, x='AdvertisedTimeAtLocation', y='Delay', height=880)
     # st.scatter_chart(df, x='AdvertisedTimeAtLocation', y='Delay', height=660, color='ActivityType')
+
+    
+
     scale = alt.Scale(
         range=["#1C0B19", "#698996", "#960200", "#9C89B8"],
         domain=list(locations))
